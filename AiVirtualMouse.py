@@ -25,7 +25,7 @@ while True:
     # 1. 检测手部 得到手指关键点坐标
     img = detector.findHands(img)
     cv2.rectangle(img, (frameR, frameR), (wCam - frameR, hCam - frameR), (0, 255, 0), 2,  cv2.FONT_HERSHEY_PLAIN)
-    lmList = detector.findPosition(img, draw=False)
+    lmList = detector.findPosition(img)
 
     # 2. 判断食指和中指是否伸出
     if len(lmList) != 0:

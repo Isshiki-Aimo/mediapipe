@@ -1,10 +1,15 @@
+import math
+import time
+
 import cv2
 import mediapipe as mp
-import time
-import math
+
 
 class handDetector():
-    def __init__(self, mode=False, maxHands=2, modelComplexity=1,detectionCon=0.8,trackCon=0.8):
+    # modelComplexity 模型复杂度
+    # detectionConfidence 检测置信度
+    # trackingConfidence 追踪置信度
+    def __init__(self, mode=False, maxHands=2, modelComplexity=1, detectionCon=0.8, trackCon=0.8):
         self.mode = mode
         self.maxHands = maxHands
         self.detectionCon = detectionCon
@@ -12,35 +17,47 @@ class handDetector():
         self.trackCon = trackCon
 
         self.mpHands = mp.solutions.hands
-        self.hands = self.mpHands.Hands(self.mode, self.maxHands,self.modelComplex, self.detectionCon, self.trackCon)
-        self.mpDraw = mp.solutions.drawing_utils
         self.tipIds = [4, 8, 12, 16, 20]
+        self.hands = self.mpHands.Hands(self.mode, self.maxHands, self.modelComplex, self.detectionCon, self.trackCon)
+        # 绘制参数
+        self.mpDraw = mp.solutions.drawing_utils
+        # 点的样式BGR
+        self.handLmStyle = self.mpDraw.DrawingSpec(color=(255, 0, 0), thickness=2)
+        # 连接线的样式
+        self.handConnStyle = self.mpDraw.DrawingSpec(color=(0, 0, 255), thickness=1)
 
+    # 绘制手部的关节点
     def findHands(self, img, draw=True):
         imgRGB = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         self.results = self.hands.process(imgRGB)
-
-        print(self.results.multi_handedness)  # 获取检测结果中的左右手标签并打印
-
         if self.results.multi_hand_landmarks:
             for handLms in self.results.multi_hand_landmarks:
                 if draw:
-                    self.mpDraw.draw_landmarks(img, handLms, self.mpHands.HAND_CONNECTIONS)
+                    self.mpDraw.draw_landmarks(img, handLms, self.mpHands.HAND_CONNECTIONS, self.handLmStyle,
+                                               self.handConnStyle)
         return img
 
-    def findPosition(self, img, draw=True):
+    # 获取手部关节点坐标
+    # Text为true可以显示关节点ID，为false不显示
+    # Magnify为true可以放大关节点，为false不放大，MagifyID为放大关节点的ID
+    def findPosition(self, img, Text=True, Magnify=False, MagifyId=0):
         self.lmList = []
         if self.results.multi_hand_landmarks:
             for handLms in self.results.multi_hand_landmarks:
                 for id, lm in enumerate(handLms.landmark):
                     h, w, c = img.shape
                     cx, cy = int(lm.x * w), int(lm.y * h)
-                    # print(id, cx, cy)
                     self.lmList.append([id, cx, cy])
-                    if draw:
-                        cv2.circle(img, (cx, cy), 12, (255, 0, 255), cv2.FILLED)
+                    if Text:
+                        cv2.putText(img, str(id), (cx - 30, cy + 5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 1)
+                    if Magnify:
+                        cv2.circle(img, (self.lmList[MagifyId][1], self.lmList[MagifyId][2]),
+                                   15,
+                                   (0, 0, 255),
+                                   cv2.FILLED)
         return self.lmList
 
+    # 检测手指是否伸出
     def fingersUp(self):
         fingers = []
         # 大拇指
@@ -59,6 +76,7 @@ class handDetector():
         # totalFingers = fingers.count(1)
         return fingers
 
+    # 计算手指之间的距离
     def findDistance(self, p1, p2, img, draw=True, r=15, t=3):
         x1, y1 = self.lmList[p1][1:]
         x2, y2 = self.lmList[p2][1:]
@@ -81,9 +99,9 @@ def main():
     detector = handDetector()
     while True:
         success, img = cap.read()
-        img = detector.findHands(img)        # 检测手势并画上骨架信息
+        img = detector.findHands(img)  # 检测手势并画上骨架信息
 
-        lmList = detector.findPosition(img)  # 获取得到坐标点的列表
+        lmList = detector.findPosition(img, Text=True, Magnify=False, MagifyId=0)  # 获取得到坐标点的列表
         if len(lmList) != 0:
             print(lmList[4])
 
