@@ -2,11 +2,11 @@ import time
 from ctypes import cast, POINTER
 
 import cv2
-import numpy as np
 from comtypes import CLSCTX_ALL
 from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
 
 import HandTrackingModule as htm
+from angle_util import *
 from util import *
 
 devices = AudioUtilities.GetSpeakers()
@@ -26,10 +26,12 @@ pTime = 0
 detector = htm.handDetector()
 
 no_act_thres = 15  # 可以容忍的错误帧数
-stop_thres = 15  # 判断为停滞的移动距离
+stop_thres = 30  # 判断为停滞的移动距离
 stable_thres = 20  # 判断为稳定触发的时间
 stop_time = [0]
 old_lmList = None
+functionflag = False
+movecount = 50
 
 while True:
     ret, img = cap.read()
@@ -43,31 +45,46 @@ while True:
         # 判断食指是否稳定
         # 判定为停止开始稳定读秒
         length = compute_distance(lmList[8][1], lmList[8][2], old_lmList[8][1], old_lmList[8][2])
-        print(length)
-        if length < stop_thres:
-            if stop_time[0] < stable_thres:
-                stop_time[0] += 1
+        fingers = detector.fingersUp()
+        if fingers[1] and fingers[2]:
+            length, img, pointInfo = detector.findDistance(8, 12, img)
+            if length < 60 or functionflag:
+                if stop_time[0] < stable_thres:
+                    stop_time[0] += 1
 
-            fill_cnt = stop_time[0] / stable_thres * 360
-            cv2.circle(img, (lmList[8][1], lmList[8][2]), 15, (0, 255, 0), cv2.FILLED)
-            if 0 < fill_cnt < 360:
-                cv2.ellipse(img, (lmList[8][1], lmList[8][2]), (30, 30), 0, 0, fill_cnt, (255, 255, 0),
-                            2)
-                # 进入功能开始调节音量
-            else:
-                cv2.ellipse(img, (lmList[8][1], lmList[8][2]), (30, 30), 0, 0, fill_cnt, (0, 150, 255),
-                            4)
-                # 下面实现长度到音量的转换
-                # np.interp为插值函数，简而言之，看line_len的值在[15，200]中所占比例，然后去[min_volume,max_volume]中线性寻找相应的值，作为返回值
-                vol = np.interp(length, [0, 20], [minVol, maxVol])
-                # 用之前得到的vol值设置电脑音量
-                volume.SetMasterVolumeLevel(vol, None)
-                volBar = np.interp(length, [0, 20], [350, 150])
-                volPer = np.interp(length, [0, 20], [0, 100])
+                fill_cnt = stop_time[0] / stable_thres * 360
+                cv2.circle(img, (lmList[8][1], lmList[8][2]), 15, (0, 255, 0), cv2.FILLED)
+                if 0 < fill_cnt < 360:
+                    cv2.ellipse(img, (lmList[8][1], lmList[8][2]), (30, 30), 0, 0, fill_cnt, (255, 255, 0),
+                                2)
+                    # 进入功能开始调节音量
+                else:
+                    cv2.ellipse(img, (lmList[8][1], lmList[8][2]), (30, 30), 0, 0, fill_cnt, (0, 150, 255),
+                                4)
+                    functionflag = True
 
-                cv2.rectangle(img, (20, 150), (50, 350), (255, 0, 255), 2)
-                cv2.rectangle(img, (20, int(volBar)), (50, 350), (255, 0, 255), cv2.FILLED)
-                cv2.putText(img, f'{int(volPer)}%', (10, 380), cv2.FONT_HERSHEY_PLAIN, 2, (255, 0, 255), 2)
+                    length, img, pointInfo = detector.findDistance(8, 12, img)
+                    if length > 60:
+                        stop_time[0] = 0
+                        functionflag = False
+
+                    # 下面实现长度到音量的转换
+                    # np.interp为插值函数，简而言之，看line_len的值在[15，200]中所占比例，然后去[min_volume,max_volume]中线性寻找相应的值，作为返回值
+                    direction = compute_direction(lmList[8][1], lmList[8][2], old_lmList[8][1], old_lmList[8][2])
+                    if direction == 2:
+                        movecount -= 3
+                    elif direction == 8:
+                        movecount += 3
+                    print(movecount)
+                    vol = np.interp(movecount, [0, 100], [minVol, maxVol])
+                    # 用之前得到的vol值设置电脑音量
+                    volume.SetMasterVolumeLevel(vol, None)
+                    volBar = np.interp(movecount, [0, 100], [350, 150])
+                    volPer = np.interp(movecount, [0, 100], [0, 100])
+
+                    cv2.rectangle(img, (20, 150), (50, 350), (255, 0, 255), 2)
+                    cv2.rectangle(img, (20, int(volBar)), (50, 350), (255, 0, 255), cv2.FILLED)
+                    cv2.putText(img, f'{int(volPer)}%', (10, 380), cv2.FONT_HERSHEY_PLAIN, 2, (255, 0, 255), 2)
         # 判定为移动，刷新时间
         else:
             stop_time[0] = 0
