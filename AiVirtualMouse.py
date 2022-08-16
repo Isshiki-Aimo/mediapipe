@@ -16,6 +16,9 @@ pTime = 0
 plocX, plocY = 0, 0
 clocX, clocY = 0, 0
 
+stable_thres = 40  # 判断为稳定触发的时间
+stop_time = [0]
+
 detector = htm.handDetector()
 wScr, hScr = autopy.screen.size()
 # print(wScr, hScr)
@@ -51,10 +54,22 @@ while True:
         # 5. 若是食指和中指都伸出 则检测指头距离 距离够短则对应鼠标点击
         if fingers[1] and fingers[2]:
             length, img, pointInfo = detector.findDistance(8, 12, img)
-            if length < 40:
-                cv2.circle(img, (pointInfo[4], pointInfo[5]),
-                           15, (0, 255, 0), cv2.FILLED)
-                autopy.mouse.click()
+            if length < 60:
+
+                if stop_time[0] < stable_thres:
+                    stop_time[0] += 1
+
+                fill_cnt = stop_time[0] / stable_thres * 360
+                cv2.circle(img, ((pointInfo[4], pointInfo[5])), 15, (0, 255, 0), cv2.FILLED)
+                if 0 < fill_cnt < 360:
+                    cv2.ellipse(img, ((pointInfo[4], pointInfo[5])), (30, 30), 0, 0, fill_cnt, (255, 255, 0),
+                                2)
+                    # 进入功能开始调节音量
+                else:
+                    stop_time[0]=0
+                    autopy.mouse.click()
+            else:
+                stop_time[0]=0
 
     cTime = time.time()
     fps = 1 / (cTime - pTime)
