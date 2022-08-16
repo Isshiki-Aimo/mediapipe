@@ -4,6 +4,8 @@ import time
 import cv2
 import mediapipe as mp
 
+import angle_util
+
 
 class handDetector():
     # modelComplexity 模型复杂度
@@ -40,6 +42,8 @@ class handDetector():
     # 获取手部关节点坐标
     # Text为true可以显示关节点ID，为false不显示
     # Magnify为true可以放大关节点，为false不放大，MagifyID为放大关节点的ID
+    # TODO: 采集到两只手的时候，两只手的坐标都存放在一个列表中，这里需要修改
+    # TODO: 左手第21个点后面的点都是右手的点，修改为列表中有两个列表，分别存放左右手的点
     def findPosition(self, img, Text=True, Magnify=False, MagifyId=0):
         self.lmList = []
         if self.results.multi_hand_landmarks:
@@ -55,6 +59,7 @@ class handDetector():
                                    15,
                                    (0, 0, 255),
                                    cv2.FILLED)
+        print(self.lmList)
         return self.lmList
 
     # 检测手指是否伸出
@@ -72,8 +77,16 @@ class handDetector():
                 fingers.append(1)
             else:
                 fingers.append(0)
-        print(fingers)
         return fingers
+
+    # 使用cos角判断手指是否伸出
+    def fingersUP_cos(self):
+        keypoint = []
+        for i in self.lmList:
+            keypoint.append(i[1:])
+        angles = angle_util.pose_to_angles(keypoint)
+        print(angles)
+        return angles
 
     # 计算手指之间的距离
     def findDistance(self, p1, p2, img, draw=True, r=15, t=3):
@@ -102,14 +115,12 @@ def main():
 
         lmList = detector.findPosition(img, Text=True, Magnify=False, MagifyId=0)  # 获取得到坐标点的列表
         if len(lmList) != 0:
-            print(lmList[4])
             detector.fingersUp()
+            detector.fingersUP_cos()
 
         cTime = time.time()
         fps = 1 / (cTime - pTime)
         pTime = cTime
-
-
 
         cv2.putText(img, 'fps:' + str(int(fps)), (10, 70), cv2.FONT_HERSHEY_PLAIN, 3, (255, 0, 255), 3)
         cv2.imshow('Image', img)
