@@ -72,8 +72,7 @@ class handDetector():
                 fingers.append(1)
             else:
                 fingers.append(0)
-
-        # totalFingers = fingers.count(1)
+        print(fingers)
         return fingers
 
     # 计算手指之间的距离
@@ -104,14 +103,18 @@ def main():
         lmList = detector.findPosition(img, Text=True, Magnify=False, MagifyId=0)  # 获取得到坐标点的列表
         if len(lmList) != 0:
             print(lmList[4])
+            detector.fingersUp()
 
         cTime = time.time()
         fps = 1 / (cTime - pTime)
         pTime = cTime
 
+
+
         cv2.putText(img, 'fps:' + str(int(fps)), (10, 70), cv2.FONT_HERSHEY_PLAIN, 3, (255, 0, 255), 3)
         cv2.imshow('Image', img)
-        cv2.waitKey(1)
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
 
 
 if __name__ == "__main__":
