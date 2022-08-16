@@ -25,11 +25,17 @@ cap.set(4, hCam)
 pTime = 0
 detector = htm.handDetector()
 
+no_act_thres = 15  # 可以容忍的错误帧数
+stop_thres = 40  # 判断为停滞的移动距离
+stable_thres = 10  # 判断为稳定触发的时间
+
 while True:
     ret, img = cap.read()
     img = detector.findHands(img)
     lmList = detector.findPosition(img)
+
     if len(lmList) != 0:
+        old_lmList = lmList
         x1, y1, x2, y2 = lmList[4][1], lmList[4][2], lmList[8][1], lmList[8][2]
         xc, yc = (x2 + x1) // 2, (y2 + y1) // 2
         cv2.circle(img, (x1, y1), 15, (255, 0, 255), cv2.FILLED)
@@ -38,6 +44,7 @@ while True:
         cv2.line(img, (x1, y1), (x2, y2), (255, 0, 255), 3)
 
         length = math.hypot(x2 - x1, y2 - y1)  # 15--200
+        print(length)
         if length < 25:
             cv2.circle(img, (xc, yc), 15, (0, 255, 0), cv2.FILLED)
 
@@ -52,6 +59,11 @@ while True:
         cv2.rectangle(img, (20, 150), (50, 350), (255, 0, 255), 2)
         cv2.rectangle(img, (20, int(volBar)), (50, 350), (255, 0, 255), cv2.FILLED)
         cv2.putText(img, f'{int(volPer)}%', (10, 380), cv2.FONT_HERSHEY_PLAIN, 2, (255, 0, 255), 2)
+
+
+
+
+
 
     cTime = time.time()
     fps = 1 / (cTime - pTime)

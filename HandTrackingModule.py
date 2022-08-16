@@ -59,7 +59,6 @@ class handDetector():
                                    15,
                                    (0, 0, 255),
                                    cv2.FILLED)
-        print(self.lmList)
         return self.lmList
 
     # 检测手指是否伸出
@@ -85,7 +84,6 @@ class handDetector():
         for i in self.lmList:
             keypoint.append(i[1:])
         angles = angle_util.pose_to_angles(keypoint)
-        print(angles)
         return angles
 
     # 计算手指之间的距离
