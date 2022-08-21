@@ -25,9 +25,8 @@ cap.set(4, hCam)
 pTime = 0
 detector = htm.handDetector()
 
-no_act_thres = 15  # 可以容忍的错误帧数
-stop_thres = 30  # 判断为停滞的移动距离
-stable_thres = 20  # 判断为稳定触发的时间
+stop_thres = 10  # 判断为停滞的移动距离
+stable_thres = 30  # 判断为稳定触发的时间
 stop_time = [0]
 old_lmList = None
 functionflag = False
@@ -37,6 +36,7 @@ while True:
     ret, img = cap.read()
     img = detector.findHands(img)
     lmList = detector.findPosition(img)
+
     if old_lmList is None and len(lmList):
         old_lmList = lmList
 
@@ -44,14 +44,13 @@ while True:
         # 下面实现长度到音量的转换
         # 判断食指是否稳定
         # 判定为停止开始稳定读秒
-        length = compute_distance(lmList[8][1], lmList[8][2], old_lmList[8][1], old_lmList[8][2])
+        stop_length = compute_distance(lmList[8][1], lmList[8][2], old_lmList[8][1], old_lmList[8][2])
         fingers = detector.fingersUp()
         if fingers[1] and fingers[2]:
             length, img, pointInfo = detector.findDistance(8, 12, img)
-            if length < 60 or functionflag:
+            if (length < 60 and stop_length < stop_thres) or functionflag:
                 if stop_time[0] < stable_thres:
                     stop_time[0] += 1
-
                 fill_cnt = stop_time[0] / stable_thres * 360
                 cv2.circle(img, (lmList[8][1], lmList[8][2]), 15, (0, 255, 0), cv2.FILLED)
                 if 0 < fill_cnt < 360:
@@ -75,7 +74,6 @@ while True:
                         movecount -= 3
                     elif direction == 8:
                         movecount += 3
-                    print(movecount)
                     vol = np.interp(movecount, [0, 100], [minVol, maxVol])
                     # 用之前得到的vol值设置电脑音量
                     volume.SetMasterVolumeLevel(vol, None)
@@ -85,9 +83,13 @@ while True:
                     cv2.rectangle(img, (20, 150), (50, 350), (255, 0, 255), 2)
                     cv2.rectangle(img, (20, int(volBar)), (50, 350), (255, 0, 255), cv2.FILLED)
                     cv2.putText(img, f'{int(volPer)}%', (10, 380), cv2.FONT_HERSHEY_PLAIN, 2, (255, 0, 255), 2)
-        # 判定为移动，刷新时间
+            # 判定为移动，刷新时间
+            else:
+                stop_time[0] = 0
+        # 判定为双指收缩，刷新时间
         else:
             stop_time[0] = 0
+
         old_lmList = lmList
 
     cTime = time.time()
