@@ -57,6 +57,7 @@ while True:
                 if 0 < fill_cnt < 360:
                     cv2.ellipse(img, (lmList[8][1], lmList[8][2]), (30, 30), 0, 0, fill_cnt, (255, 255, 0),
                                 2)
+                    draw = True
                     # 进入功能调节音量
                 else:
                     if draw:
@@ -87,16 +88,19 @@ while True:
                         cv2.rectangle(img, (20, int(volBar)), (50, 350), (255, 0, 255), cv2.FILLED)
                         cv2.putText(img, f'{int(volPer)}%', (10, 380), cv2.FONT_HERSHEY_PLAIN, 2, (255, 0, 255), 2)
 
-                    if stop_length < stop_thres + 15:
+                    if stop_length < stop_thres-5:
                         if stop_time1[0] < stable_thres:
                             stop_time1[0] += 1
                         fill_cnt = stop_time1[0] / stable_thres * 360
                         cv2.circle(img, (lmList[8][1], lmList[8][2]), 15, (0, 255, 0), cv2.FILLED)
                         if 0 < fill_cnt < 360:
-                            cv2.ellipse(img, (lmList[8][1], lmList[8][2]), (30, 30), 0, 0, fill_cnt, (255, 255, 0),
+                            cv2.ellipse(img, (lmList[8][1], lmList[8][2]), (30, 30), 0, 0, fill_cnt, (0, 255, 0),
                                         2)
-                        if fill_cnt == 0:
+                        if fill_cnt == 360:
                             draw = False
+                            stop_time1[0] = -50
+                            stop_time[0] = -50
+                            functionflag = False
 
             else:
                 stop_time[0] = 0
