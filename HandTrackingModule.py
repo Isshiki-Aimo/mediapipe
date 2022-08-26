@@ -97,7 +97,7 @@ class handDetector():
             cv2.circle(img, (x1, y1), r, (255, 0, 255), cv2.FILLED)
             cv2.circle(img, (x2, y2), r, (255, 0, 255), cv2.FILLED)
             cv2.circle(img, (cx, cy), r, (0, 0, 255), cv2.FILLED)
-            length = math.hypot(x2 - x1, y2 - y1)
+        length = math.hypot(x2 - x1, y2 - y1)
 
         return length, img, [x1, y1, x2, y2, cx, cy]
 
