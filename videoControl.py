@@ -44,16 +44,17 @@ while True:
         fingers = detector.fingersUp()
 
         # #功能1：切换上一个视频
-        # cv2.circle(img, (x3, y3), 15, (255, 0, 255), cv2.FILLED)
-        # clocY3 = y3
-        # if clocY3 - plocY3 > 50:
-        #     failampHandle = findWindow('Failamp')
-        #     changeWindow(failampHandle)
-        #     k.press_keys([k.alt_key, 'p'])
-        #     k.release_key(k.alt_key)
-        #     k.release_key('p')
-        #     print("previous video")
-        # plocY3 = clocY3
+        cv2.circle(img, (x3, y3), 15, (255, 0, 255), cv2.FILLED)
+        clocY3 = y3
+        if clocY3 - plocY3 > 50:
+            if flag == 0:
+                constantId = findWindow('Failamp')
+            changeWindow(constantId)
+            k.press_key(k.alt_key)
+            k.tap_key('p')
+            k.release_key(k.alt_key)
+            print("previous video")
+        plocY3 = clocY3
         #
         #
         # #功能2:切换下一个视频
