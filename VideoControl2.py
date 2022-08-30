@@ -28,108 +28,111 @@ detector = htm.handDetector()
 
 stop_thres = 15  # 判断为停滞的移动距离
 stable_thres = 20  # 判断为稳定触发的时间
-stop_time = [0]
+stop_time = [0, 0]  # 停滞时间记录
 stop_time1 = [-50]
 old_lmList = None
 functionflag = False
 draw = True
 movecount = 50
 failampHandle = findWindow('Failamp')
+k = PyKeyboard()
 
 while True:
-    k = PyKeyboard()
     ret, img = cap.read()
     img = detector.findHands(img)
     lmList = detector.findPosition(img)
 
-    if old_lmList is None and len(lmList):
+    if old_lmList is None and len(lmList) :
+        print('old_lmList is None and len(lmList)')
         old_lmList = lmList
 
-    if len(lmList):
-        # 下面实现长度到音量的转换
+    if len(lmList) and len(old_lmList):
         # 判断食指是否稳定
-        stop_length = compute_distance(lmList[8][1], lmList[8][2], old_lmList[8][1], old_lmList[8][2])
         fingers = detector.fingersUp()
 
-        # 功能1: 播放功能，五指伸出保持后触发
-        if all(fingers):
-            if stop_length < stop_thres:
-                if stop_time[0] < stable_thres:
-                    stop_time[0] += 1
-                fill_cnt = stop_time[0] / stable_thres * 360
-                cv2.circle(img, (lmList[8][1], lmList[8][2]), 15, (0, 255, 0), cv2.FILLED)
-                if 0 < fill_cnt < 360:
-                    cv2.ellipse(img, (lmList[12][1], lmList[12][2]), (30, 30), 0, 0, fill_cnt, (255, 255, 0),
-                                2)
-
-                else:
-                    # 进入播放功能
-                    stop_time[0] = 0
-                    changeWindow(failampHandle)
-                    k.tap_key(k.space_key)
-                    print("video palyed")
-
-            else:
-                stop_time[0] = 0
-        else:
-            stop_time[0] = 0
-
-
-        #  功能2：暂停功能，五指收起后触发
-        x7, y7 = lmList[7][1:]
-        length, img, pointInfo = detector.findDistance(4, 7, img, draw=False)
-        if length < 50:
-            if stop_length < stop_thres:
-                if stop_time[0] < stable_thres:
-                    stop_time[0] += 1
-
-                fill_cnt = stop_time[0] / stable_thres * 360
-                cv2.circle(img, (lmList[8][1], lmList[8][2]), 15, (0, 255, 0), cv2.FILLED)
-                if 0 < fill_cnt < 360:
-                    cv2.ellipse(img, (lmList[4][1], lmList[4][2]), (30, 30), 0, 0, fill_cnt, (255, 255, 0),
-                                2)
-
-                else:
-                    # 进入暂停功能
-                    stop_time[0] = 0
-                    changeWindow(failampHandle)
-                    k.tap_key(k.space_key)
-                    print("video paused")
-            else:
-                stop_time[0] = 0
-        else:
-            stop_time[0] = 0
-
+        # # 功能1: 播放功能，五指伸出保持静止后触发
+        # if all(fingers):
+        #     stop_length = compute_distance(lmList[8][1], lmList[8][2], old_lmList[8][1], old_lmList[8][2])
+        #     if stop_length < stop_thres:
+        #         if stop_time[0] < stable_thres:
+        #             stop_time[0] += 1
+        #         fill_cnt = stop_time[0] / stable_thres * 360
+        #         cv2.circle(img, (lmList[8][1], lmList[8][2]), 15, (0, 255, 0), cv2.FILLED)
+        #         if 0 < fill_cnt < 360:
+        #             cv2.ellipse(img, (lmList[12][1], lmList[12][2]), (30, 30), 0, 0, fill_cnt, (255, 255, 0),
+        #                         2)
+        #
+        #         else:
+        #             # 进入播放功能
+        #             stop_time[0] = 0
+        #             changeWindow(failampHandle)
+        #             k.tap_key(k.space_key)
+        #             print("video palyed")
+        #
+        #     else:
+        #         stop_time[0] = 0
+        # else:
+        #     stop_time[0] = 0
+        #
+        # #  功能2：暂停功能，五指收起保持静止后触发
+        # length, img, pointInfo = detector.findDistance(4, 7, img, draw=False)
+        # if length < 50:
+        #
+        #     stop_length = compute_distance(lmList[4][1], lmList[4][2], old_lmList[4][1], old_lmList[4][2])
+        #     if stop_length < stop_thres:
+        #         if stop_time[1] < stable_thres:
+        #             stop_time[1] += 1
+        #
+        #         fill_cnt = stop_time[1] / stable_thres * 360
+        #         cv2.circle(img, (lmList[8][1], lmList[8][2]), 15, (0, 255, 0), cv2.FILLED)
+        #         if 0 < fill_cnt < 360:
+        #             cv2.ellipse(img, (lmList[4][1], lmList[4][2]), (30, 30), 0, 0, fill_cnt, (255, 255, 0),
+        #                         2)
+        #
+        #         else:
+        #             # 进入暂停功能
+        #             stop_time[1] = 0
+        #             changeWindow(failampHandle)
+        #             k.tap_key(k.space_key)
+        #             print("video paused")
+        #     else:
+        #         stop_time[1] = 0
+        # else:
+        #     stop_time[1] = 0
 
         # 功能3：切换上一个，五指下滑
         if all(fingers):
-            direction = compute_direction(lmList[8][1], lmList[8][2], old_lmList[8][1], old_lmList[8][2])
-            if direction == 8:
-                movecount += 3
+            direction = compute_direction(lmList[12][1], lmList[12][2], old_lmList[12][1], old_lmList[12][2])
+            if direction == 2:
+                movecount += 5
             cv2.circle(img, (lmList[4][1], lmList[4][2]), 15, (255, 0, 255), cv2.FILLED)
-            if lmList[12][2] - old_lmList[12][2] > 50:
+            if movecount > 75:
                 changeWindow(failampHandle)
                 k.press_key(k.alt_key)
                 k.tap_key('p')
                 k.release_key(k.alt_key)
                 print("previous video")
-
+                movecount = 50
+        else:
+            movecount = 50
 
         # 功能4：切换下一个，五指上滑
         if all(fingers):
-            direction = compute_direction(lmList[8][1], lmList[8][2], old_lmList[8][1], old_lmList[8][2])
-            if direction == 2:
-                movecount -= 3
+            direction = compute_direction(lmList[12][1], lmList[12][2], old_lmList[12][1], old_lmList[12][2])
+            if direction == 8:
+                movecount -= 5
             cv2.circle(img, (lmList[4][1], lmList[4][2]), 15, (255, 0, 255), cv2.FILLED)
-            if old_lmList[12][2] - lmList[12][2] > 50:
+            if movecount < 25:
                 changeWindow(failampHandle)
                 k.press_key(k.alt_key)
                 k.tap_key('n')
                 k.release_key(k.alt_key)
                 print("next video")
+                movecount = 50
+        else:
+            movecount = 50
 
-        old_lmList = lmList
-
+    old_lmList = lmList
 
     cTime = time.time()
     fps = 1 / (cTime - pTime)

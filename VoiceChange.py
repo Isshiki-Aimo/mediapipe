@@ -38,6 +38,7 @@ while True:
     lmList = detector.findPosition(img)
 
     if old_lmList is None and len(lmList):
+        print('old_lmList is None and len(lmList)')
         old_lmList = lmList
 
     if len(lmList):
