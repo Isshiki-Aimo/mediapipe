@@ -17,7 +17,7 @@ minVol = volumeRange[0]
 maxVol = volumeRange[1]
 
 #############################
-wCam, hCam = 1080, 720
+wCam, hCam = 300, 100
 #############################
 cap = cv2.VideoCapture(0)
 cap.set(3, wCam)
@@ -42,6 +42,7 @@ while True:
         old_lmList = lmList
 
     if len(lmList):
+        print(lmList[8])
         # 下面实现长度到音量的转换
         # 判断食指是否稳定
         # 判定为停止开始稳定读秒

@@ -3,9 +3,10 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtMultimedia import *
 from PyQt5.QtMultimediaWidgets import *
-
+from multiprocessing import Process
 from MainWindow import Ui_MainWindow
 
+from VideoControl2 import *
 
 def hhmmss(ms):
     # s = 1000
@@ -184,4 +185,6 @@ if __name__ == '__main__':
     app.setStyleSheet("QToolTip { color: #ffffff; background-color: #2a82da; border: 1px solid white; }")
 
     window = MainWindow()
+    failampHandle = findWindow('Failamp')
+    Process(update(failampHandle)).start()
     app.exec_()
