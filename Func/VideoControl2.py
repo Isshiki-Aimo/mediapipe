@@ -5,7 +5,7 @@ from comtypes import CLSCTX_ALL
 from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
 from pykeyboard import PyKeyboard
 import HandTrackingModule as htm
-from util import compute_distance, compute_direction
+from utils.util import compute_distance, compute_direction
 from utils.findWindow import findWindow, changeWindow
 
 devices = AudioUtilities.GetSpeakers()

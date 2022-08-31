@@ -4,7 +4,7 @@ import time
 import cv2
 import mediapipe as mp
 
-import angle_util
+from utils import angle_util
 
 
 class handDetector():
@@ -42,8 +42,6 @@ class handDetector():
     # 获取手部关节点坐标
     # Text为true可以显示关节点ID，为false不显示
     # Magnify为true可以放大关节点，为false不放大，MagifyID为放大关节点的ID
-    # TODO: 采集到两只手的时候，两只手的坐标都存放在一个列表中，这里需要修改
-    # TODO: 左手第21个点后面的点都是右手的点，修改为列表中有两个列表，分别存放左右手的点
     def findPosition(self, img, Text=True, Magnify=False, MagifyId=0):
         self.lmList = []
         if self.results.multi_hand_landmarks:

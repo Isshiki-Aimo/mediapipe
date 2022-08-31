@@ -4,7 +4,7 @@ import HandTrackingModule as htm
 import autopy
 import numpy as np
 import time
-from util import compute_distance
+from utils.util import compute_distance
 from comtypes import CLSCTX_ALL
 from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
 from ctypes import cast, POINTER

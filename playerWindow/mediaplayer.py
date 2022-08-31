@@ -1,12 +1,14 @@
-from PyQt5.QtGui import *
-from PyQt5.QtWidgets import *
+from multiprocessing import Process
+
 from PyQt5.QtCore import *
+from PyQt5.QtGui import *
 from PyQt5.QtMultimedia import *
 from PyQt5.QtMultimediaWidgets import *
-from multiprocessing import Process
-from MainWindow import Ui_MainWindow
+from PyQt5.QtWidgets import *
 
-from VideoControl2 import *
+from MainWindow import Ui_MainWindow
+from Func.VideoControl2 import *
+
 
 def hhmmss(ms):
     # s = 1000
@@ -135,6 +137,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def update_position(self, position):
         if position >= 0:
             self.currentTimeLabel.setText(hhmmss(position))
+
+        print("?", position)
 
         # Disable the events to prevent updating triggering a setPosition event (can cause stuttering).
         self.timeSlider.blockSignals(True)
