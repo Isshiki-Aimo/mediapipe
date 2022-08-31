@@ -19,6 +19,7 @@ maxVol = volumeRange[1]
 
 #############################
 wCam, hCam = 1080, 720
+# wCam, hCam = 450, 150
 #############################
 cap = cv2.VideoCapture(0)
 cap.set(3, wCam)
@@ -33,6 +34,8 @@ stop_time1 = [-50]
 old_lmList = None
 functionflag = False
 draw = True
+
+
 
 while True:
     ret, img = cap.read()
@@ -114,6 +117,9 @@ while True:
     fps = 1 / (cTime - pTime)
     pTime = cTime
     cv2.putText(img, f'fps: {int(fps)}', (10, 40), cv2.FONT_HERSHEY_PLAIN, 2, (255, 0, 0), 2)
+
+    cv2.namedWindow("Image", cv2.WINDOW_KEEPRATIO)
+    cv2.resizeWindow("Image", 450, 300)
 
     cv2.imshow("Image", img)
     if cv2.waitKey(1) & 0xFF == ord('q'):
