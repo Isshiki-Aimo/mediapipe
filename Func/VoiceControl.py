@@ -35,8 +35,6 @@ old_lmList = None
 functionflag = False
 draw = True
 
-
-
 while True:
     ret, img = cap.read()
     img = detector.findHands(img)
@@ -91,7 +89,7 @@ while True:
                         cv2.rectangle(img, (20, int(volBar)), (50, 350), (255, 0, 255), cv2.FILLED)
                         cv2.putText(img, f'{int(volPer)}%', (10, 380), cv2.FONT_HERSHEY_PLAIN, 2, (255, 0, 255), 2)
 
-                    if stop_length < stop_thres-5:
+                    if stop_length < stop_thres - 5:
                         if stop_time1[0] < stable_thres:
                             stop_time1[0] += 1
                         fill_cnt = stop_time1[0] / stable_thres * 360

@@ -6,8 +6,8 @@ from PyQt5.QtMultimedia import *
 from PyQt5.QtMultimediaWidgets import *
 from PyQt5.QtWidgets import *
 
-from MainWindow import Ui_MainWindow
 from Func.VideoControl2 import *
+from MainWindow import Ui_MainWindow
 
 
 def hhmmss(ms):
@@ -49,7 +49,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.player = QMediaPlayer()
 
-        self.max=0
+        self.max = 0
 
         self.player.error.connect(self.erroralert)
         self.player.play()
@@ -63,7 +63,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.viewer.setWindowFlags(self.viewer.windowFlags() | Qt.WindowStaysOnTopHint)
         self.viewer.setMinimumSize(QSize(480, 360))
         self.viewer.setWindowTitle('Viewer')
-
 
         videoWidget = QVideoWidget()
         self.viewer.setCentralWidget(videoWidget)
@@ -94,7 +93,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.open_file_action.triggered.connect(self.open_file)
 
         self.setAcceptDrops(True)
-
 
         self.show()
 
@@ -131,7 +129,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def update_duration(self, duration):
         print("!", duration)
-        self.max=duration
+        self.max = duration
         print("?", self.player.duration())
 
         self.timeSlider.setMaximum(duration)
@@ -195,5 +193,5 @@ if __name__ == '__main__':
 
     window = MainWindow()
     failampHandle = findWindow('Failamp')
-    Process(update(failampHandle,window)).start()
+    Process(update(failampHandle, window)).start()
     app.exec_()

@@ -1,13 +1,15 @@
-import cv2
 import math
-import HandTrackingModule as htm
-import autopy
-import numpy as np
 import time
-from utils.util import compute_distance
+from ctypes import cast, POINTER
+
+import autopy
+import cv2
+import numpy as np
 from comtypes import CLSCTX_ALL
 from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
-from ctypes import cast, POINTER
+
+import HandTrackingModule as htm
+from utils.util import compute_distance
 
 devices = AudioUtilities.GetSpeakers()
 interface = devices.Activate(IAudioEndpointVolume._iid_, CLSCTX_ALL, None)
@@ -17,7 +19,7 @@ minVol = volumeRange[0]
 maxVol = volumeRange[1]
 ##############################
 wCam, hCam = 1280, 720
-pt1, pt2 = (100,100), (1100, 500)   # 虚拟鼠标的移动范围，左上坐标pt1，右下坐标pt2
+pt1, pt2 = (100, 100), (1100, 500)  # 虚拟鼠标的移动范围，左上坐标pt1，右下坐标pt2
 frameR = 100
 smoothening = 5
 ##############################
@@ -30,16 +32,18 @@ clocX, clocY = 0, 0
 
 stable_thres = 40  # 判断为稳定触发的时间
 stop_thres = 15  # 判断为停滞的移动距离
-stop_time = [0,0]
+stop_time = [0, 0]
 stop_time1 = [-50]
 old_lmList = None
 functionflag1 = False
 detector = htm.handDetector()
 wScr, hScr = autopy.screen.size()
 print(wScr, hScr)
-def voiceControl(img,lmList,old_lmList,functionflag1):
+
+
+def voiceControl(img, lmList, old_lmList, functionflag1):
     draw = True
-    functionflag=False
+    functionflag = False
     if len(lmList):
         # 下面实现长度到音量的转换
         # 判断食指是否稳定
@@ -47,8 +51,8 @@ def voiceControl(img,lmList,old_lmList,functionflag1):
         fingers = detector.fingersUp()
 
         if fingers[0] and fingers[1]:
-            functionflag=True
-            if stop_length < stop_thres or functionflag1 :
+            functionflag = True
+            if stop_length < stop_thres or functionflag1:
                 if stop_time[1] < stable_thres:
                     stop_time[1] += 1
                 fill_cnt = stop_time[1] / stable_thres * 360
@@ -87,7 +91,7 @@ def voiceControl(img,lmList,old_lmList,functionflag1):
                         cv2.rectangle(img, (20, int(volBar)), (50, 350), (255, 0, 255), cv2.FILLED)
                         cv2.putText(img, f'{int(volPer)}%', (10, 380), cv2.FONT_HERSHEY_PLAIN, 2, (255, 0, 255), 2)
 
-                    if stop_length < stop_thres-5:
+                    if stop_length < stop_thres - 5:
                         if stop_time1[0] < stable_thres:
                             stop_time1[0] += 1
                         fill_cnt = stop_time1[0] / stable_thres * 360
@@ -99,10 +103,10 @@ def voiceControl(img,lmList,old_lmList,functionflag1):
                             draw = False
                             stop_time1[0] = -50
                             stop_time[1] = -50
-                            functionflag1=False
+                            functionflag1 = False
                             functionflag = True
                     else:
-                        stop_time1[0]=0
+                        stop_time1[0] = 0
 
             else:
                 stop_time[1] = 0
@@ -111,23 +115,23 @@ def voiceControl(img,lmList,old_lmList,functionflag1):
             stop_time[1] = 0
 
         old_lmList = lmList
-    return img,functionflag,old_lmList,functionflag1
+    return img, functionflag, old_lmList, functionflag1
+
 
 while True:
     success, img = cap.read()
     # 1. 检测手部 得到手指关键点坐标
     img = detector.findHands(img)
-    cv2.rectangle(img, (frameR, frameR), (wCam - frameR, hCam - frameR), (0, 255, 0), 2,  cv2.FONT_HERSHEY_PLAIN)
+    cv2.rectangle(img, (frameR, frameR), (wCam - frameR, hCam - frameR), (0, 255, 0), 2, cv2.FONT_HERSHEY_PLAIN)
     lmList = detector.findPosition(img)
 
     if old_lmList is None and len(lmList):
         old_lmList = lmList
 
-    img,functionflag,old_lmList,functionflag1=voiceControl(img,lmList,old_lmList,functionflag1)
-
+    img, functionflag, old_lmList, functionflag1 = voiceControl(img, lmList, old_lmList, functionflag1)
 
     # 2. 判断食指和中指是否伸出
-    if len(lmList) != 0 and functionflag==False:
+    if len(lmList) != 0 and functionflag == False:
         x1, y1 = lmList[8][1:]
         x2, y2 = lmList[12][1:]
         fingers = detector.fingersUp()
@@ -138,7 +142,6 @@ while True:
             # 鼠标坐标
             # x3 = np.interp(x1, (frameR, wCam - frameR), (0, wScr))
             # y3 = np.interp(y1, (frameR, hCam - frameR), (0, hScr))
-
 
             x3 = np.interp(x1, (pt1[0], pt2[0]), (0, wScr))
             y3 = np.interp(y1, (pt1[1], pt2[1]), (0, hScr))
@@ -168,10 +171,10 @@ while True:
                                 2)
                     # 进入功能开始调节音量
                 else:
-                    stop_time[0]=0
+                    stop_time[0] = 0
                     autopy.mouse.click()
             else:
-                stop_time[0]=0
+                stop_time[0] = 0
 
     cTime = time.time()
     fps = 1 / (cTime - pTime)

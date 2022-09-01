@@ -1,8 +1,10 @@
-import cv2
-import HandTrackingModule as htm
-import autopy
-import numpy as np
 import time
+
+import autopy
+import cv2
+import numpy as np
+
+import HandTrackingModule as htm
 
 ##############################
 wCam, hCam = 1080, 720
@@ -27,7 +29,7 @@ while True:
     success, img = cap.read()
     # 1. 检测手部 得到手指关键点坐标
     img = detector.findHands(img)
-    cv2.rectangle(img, (frameR, frameR), (wCam - frameR, hCam - frameR), (0, 255, 0), 2,  cv2.FONT_HERSHEY_PLAIN)
+    cv2.rectangle(img, (frameR, frameR), (wCam - frameR, hCam - frameR), (0, 255, 0), 2, cv2.FONT_HERSHEY_PLAIN)
     lmList = detector.findPosition(img)
 
     # 2. 判断食指和中指是否伸出
@@ -66,10 +68,10 @@ while True:
                                 2)
                     # 进入功能开始调节音量
                 else:
-                    stop_time[0]=0
+                    stop_time[0] = 0
                     autopy.mouse.click()
             else:
-                stop_time[0]=0
+                stop_time[0] = 0
 
     cTime = time.time()
     fps = 1 / (cTime - pTime)

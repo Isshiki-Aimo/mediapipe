@@ -12,8 +12,8 @@ import HandTrackingModule as htm
 from utils.findWindow import findWindow, changeWindow
 
 import math
-=======
 from utils.util import compute_distance, compute_direction
+
 devices = AudioUtilities.GetSpeakers()
 interface = devices.Activate(IAudioEndpointVolume._iid_, CLSCTX_ALL, None)
 volume = cast(interface, POINTER(IAudioEndpointVolume))
@@ -32,9 +32,9 @@ detector = htm.handDetector()
 stop_thres = 15  # 判断为停滞的移动距离
 stable_thres = 20  # 判断为稳定触发的时间
 global stop_time
-stop_time = [0, 0, 0, 0,0,0]  # 停滞时间记录
+stop_time = [0, 0, 0, 0, 0, 0, 0]  # 停滞时间记录
 intervalTime = [0, 0, 0, 0]  # 间隔时间记录
-stop_time1 = [-50]
+stop_time1 = [-40]
 intervalTime = [0, 0, 0, 0]  # 间隔时间记录
 old_lmList = None
 global draw
@@ -141,12 +141,13 @@ def func_next(img, fingers, lmList, failampHandle):
         moveCount = 50
 
 
-def func_scale(img,lmList,old_lmList,failampHandle,window,fingers):
+def func_scale(img, lmList, old_lmList, failampHandle, window, fingers):
     # 功能5：双手缩放视频
-    if len(lmList)>21:
-        if lmList[8][2] < lmList[8 - 2][2] and lmList[29][2] < lmList[29 - 2][2] and  lmList[12][2] < lmList[12 - 2][2] and lmList[33][2] < lmList[33 - 2][2]:
+    if len(lmList) > 21:
+        if lmList[8][2] < lmList[8 - 2][2] and lmList[29][2] < lmList[29 - 2][2] and lmList[12][2] < lmList[12 - 2][
+            2] and lmList[33][2] < lmList[33 - 2][2]:
             stop_length = compute_distance(lmList[8][1], lmList[8][2], old_lmList[8][1], old_lmList[8][2])
-            if stop_length < stop_thres  :
+            if stop_length < stop_thres:
                 if stop_time[5] < stable_thres:
                     stop_time[5] += 1
                 fill_cnt = stop_time[5] / stable_thres * 360
@@ -172,22 +173,22 @@ def func_scale(img,lmList,old_lmList,failampHandle,window,fingers):
                         cv2.circle(img, (x3, y3), 15, (255, 0, 255), cv2.FILLED)
                         cv2.circle(img, (x4, y4), 15, (255, 0, 255), cv2.FILLED)
                         # cv2.circle(img, (xc, yc), 15, (255, 0, 255), cv2.FILLED)
-                        x=abs(x1-x2)
-                        y=abs(y1-y2)
+                        x = abs(x1 - x2)
+                        y = abs(y1 - y2)
 
-
-                        window.viewer.setFixedSize(x,2*y)
+                        window.viewer.setFixedSize(x, 2 * y)
         else:
             stop_time[5] = 0
 
     pass
 
 
-def func_progress(img,lmList,old_lmList,failampHandle,window,fingers):
-    if len(lmList)>21:
-        if lmList[8][2] < lmList[8 - 2][2] and lmList[29][2] < lmList[29 - 2][2] and lmList[12][2] > lmList[12 - 2][2] and lmList[33][2] > lmList[33 - 2][2]:
+def func_progress(img, lmList, old_lmList, failampHandle, window, fingers):
+    if len(lmList) > 21:
+        if lmList[8][2] < lmList[8 - 2][2] and lmList[29][2] < lmList[29 - 2][2] and lmList[12][2] > lmList[12 - 2][
+            2] and lmList[33][2] > lmList[33 - 2][2]:
             stop_length = compute_distance(lmList[8][1], lmList[8][2], old_lmList[8][1], old_lmList[8][2])
-            if stop_length < stop_thres  :
+            if stop_length < stop_thres:
                 if stop_time[4] < stable_thres:
                     stop_time[4] += 1
                 fill_cnt = stop_time[4] / stable_thres * 360
@@ -213,7 +214,7 @@ def func_progress(img,lmList,old_lmList,failampHandle,window,fingers):
                         cv2.line(img, (x1, y1), (x2, y2), (255, 0, 255), 3)
 
                         length = math.hypot(x2 - x1, y2 - y1)  # 15--200
-                        position=length/1080.0*window.max
+                        position = length / 1080.0 * window.max
                         window.timeSlider.setValue(position)
 
         else:
@@ -228,12 +229,11 @@ def func_voice(img, figers, lmList, stop_thres, stable_thres):
     global functionflag
     # 功能6： 单手拇指食指控制音量
     stop_length = compute_distance(lmList[8][1], lmList[8][2], old_lmList[8][1], old_lmList[8][2])
-    if figers[0] and figers[1]:
+    if figers[0] and figers[1] and not(figers[2] or figers[3] or figers[4]):
         if stop_length < stop_thres or functionflag:
-            if stop_time[5] < stable_thres:
-                stop_time[5] += 1
-                print("stop_time", stop_time[5])
-            fill_cnt = stop_time[5] / stable_thres * 360
+            if stop_time[6] < stable_thres:
+                stop_time[6] += 1
+            fill_cnt = stop_time[6] / stable_thres * 360
             cv2.circle(img, (lmList[8][1], lmList[8][2]), 15, (0, 255, 0), cv2.FILLED)
             if 0 < fill_cnt < 360:
                 cv2.ellipse(img, (lmList[8][1], lmList[8][2]), (30, 30), 0, 0, fill_cnt, (255, 255, 0),
@@ -267,10 +267,9 @@ def func_voice(img, figers, lmList, stop_thres, stable_thres):
                     cv2.rectangle(img, (20, int(volBar)), (50, 350), (255, 0, 255), cv2.FILLED)
                     cv2.putText(img, f'{int(volPer)}%', (10, 380), cv2.FONT_HERSHEY_PLAIN, 2, (255, 0, 255), 2)
 
-                if stop_length < stop_thres:
+                if stop_length < stop_thres-8:
                     if stop_time1[0] < stable_thres:
                         stop_time1[0] += 1
-                        print("stop_time1", stop_time1)
                     fill_cnt = stop_time1[0] / stable_thres * 360
                     cv2.circle(img, (lmList[8][1], lmList[8][2]), 15, (0, 255, 0), cv2.FILLED)
                     if 0 < fill_cnt < 360:
@@ -279,17 +278,17 @@ def func_voice(img, figers, lmList, stop_thres, stable_thres):
                     if fill_cnt == 360:
                         draw = False
                         stop_time1[0] = -50
-                        stop_time[5] = -50
+                        stop_time[6] = -50
                         functionflag = False
 
         else:
-            stop_time[5] = 0
+            stop_time[6] = 0
 
     else:
-        stop_time[5] = 0
+        stop_time[6] = 0
 
 
-def update(failampHandle,window):
+def update(failampHandle, window):
     k = PyKeyboard()
     global old_lmList, pTime
     while True:
@@ -303,15 +302,14 @@ def update(failampHandle,window):
 
         if len(lmList) and len(old_lmList):
             fingers = detector.fingersUp()
-            print(fingers[0])
 
             func_play(img, fingers, lmList, failampHandle)
             func_pause(img, lmList, failampHandle)
             func_previous(img, fingers, lmList, failampHandle)
             func_next(img, fingers, lmList, failampHandle)
 
-            func_progress(img,lmList,old_lmList,failampHandle,window,fingers)
-            func_scale(img, lmList, old_lmList, failampHandle, window,fingers)
+            func_progress(img, lmList, old_lmList, failampHandle, window, fingers)
+            func_scale(img, lmList, old_lmList, failampHandle, window, fingers)
             func_voice(img, fingers, lmList, 15, 20)
 
         old_lmList = lmList
